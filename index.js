@@ -19,18 +19,39 @@ const server = http.createServer(async (req, res) => {
 
   if (req.url === "/injest/elastic-stack") {
     if (req.method === "GET") {
-      console.log("books", books);
-      const result = await client.helpers.bulk({
-        datasource: books,
-        onDocument: (doc) => ({ index: { _index: "books" } }),
-      });
-      res.write(result);
-      res.end();
+      try {
+        const result = await client.helpers.bulk({
+          datasource: books,
+          onDocument: (doc) => ({ index: { _index: "books" } }),
+        });
+        res.write(result);
+        res.end();
+      } catch (error) {
+        console.log("error", error);
+        res.write("Something went wrong");
+        res.end();
+      }
     }
   }
 
-  res.write("Not Found");
-  res.end();
+  if (req.url === "/fetch/elastic-stack") {
+    if (req.method === "GET") {
+      try {
+        const result = await client.search();
+        res.write(result);
+        res.end();
+      } catch (error) {
+        console.log("error", error);
+        res.write("Something went wrong");
+        res.end();
+      }
+    }
+  }
+
+  if (req.url) {
+    res.write("Not Found");
+    res.end();
+  }
 });
 
 server.listen(4000, () => {
